@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Catch the Ball - Mobile</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <style>
+    body {
+      margin: 0;
+      background: #222;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      overflow: hidden;
+    }
+    canvas {
+      background: #333;
+      display: block;
+      margin: auto;
+    }
+    .controls {
+      position: fixed;
+      bottom: 10px;
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+    }
+    button {
+      background: #444;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 20px;
+      border-radius: 10px;
+    }
+    button:active {
+      background: #666;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Catch the Ball</h1>
+<canvas id="gameCanvas" width="400" height="600"></canvas>
+
+<div class="controls">
+  <button id="leftBtn">⬅ Left</button>
+  <button id="rightBtn">➡ Right</button>
+</div>
+
+<script>
+  const canvas = document.getElementById("gameCanvas");
+  const ctx = canvas.getContext("2d");
+
+  let basketX = canvas.width / 2 - 30;
+  const basketWidth = 60;
+  const basketHeight = 20;
+
+  let ballX = Math.random() * (canvas.width - 20);
+  let ballY = 0;
+  const ballSize = 20;
+  let ballSpeed = 3;
+
+  let score = 0;
+
+  // Movement flags
+  let moveLeft = false;
+  let moveRight = false;
+
+  document.getElementById("leftBtn").addEventListener("touchstart", () => moveLeft = true);
+  document.getElementById("leftBtn").addEventListener("touchend", () => moveLeft = false);
+
+  document.getElementById("rightBtn").addEventListener("touchstart", () => moveRight = true);
+  document.getElementById("rightBtn").addEventListener("touchend", () => moveRight = false);
+
+  function drawBasket() {
+    ctx.fillStyle = "orange";
+    ctx.fillRect(basketX, canvas.height - basketHeight - 10, basketWidth, basketHeight);
+  }
+
+  function drawBall() {
+    ctx.beginPath();
+    ctx.arc(ballX + ballSize/2, ballY + ballSize/2, ballSize/2, 0, Math.PI * 2);
+    ctx.fillStyle = "red";
+    ctx.fill();
+    ctx.closePath();
+  }
+
+  function drawScore() {
+    ctx.fillStyle = "white";
+    ctx.font = "20px Arial";
+    ctx.fillText("Score: " + score, 10, 30);
+  }
+
+  function update() {
+    if (moveLeft && basketX > 0) basketX -= 5;
+    if (moveRight && basketX < canvas.width - basketWidth) basketX += 5;
+
+    ballY += ballSpeed;
+
+    // Catching the ball
+    if (
+      ballY + ballSize >= canvas.height - basketHeight - 10 &&
+      ballX + ballSize > basketX &&
+      ballX < basketX + basketWidth
+    ) {
+      score++;
+      ballY = 0;
+      ballX = Math.random() * (canvas.width - ballSize);
+      ballSpeed += 0.2;
+    }
+
+    // Missed ball
+    if (ballY > canvas.height) {
+      score = 0;
+      ballSpeed = 3;
+      ballY = 0;
+      ballX = Math.random() * (canvas.width - ballSize);
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawBasket();
+    drawBall();
+    drawScore();
+  }
+
+  function gameLoop() {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+  }
+
+  gameLoop();
+</script>
+
+</body>
+</html>
